@@ -1,27 +1,30 @@
-# backend/app.py
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from data_manager import DataManager
-import datetime
+import os
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
-# In backend/app.py
+
+# Configure CORS
 CORS(app, resources={
     r"/api/*": {
-        "origins": [
-            "http://localhost:8000",
-            "http://127.0.0.1:8000"
-        ]
+        "origins": ["http://localhost:5000"],
+        "methods": ["GET", "POST"],
+        "allow_headers": ["Content-Type"]
     }
 })
 
-dm = DataManager("progress_data.json", "historical_data.json")
+# Initialize DataManager
+data_dir = os.path.join(os.path.dirname(__file__), 'data')
+dm = DataManager(
+    os.path.join(data_dir, 'progress_data.json'),
+    os.path.join(data_dir, 'historical_data.json')
+)
 
 @app.route("/")
-def index():
+def serve_index():
     return send_from_directory(app.static_folder, 'index.html')
 
-# backend/app.py
 @app.route("/api/modules", methods=["GET"])
 def get_modules():
     dm.daily_reset()
@@ -32,29 +35,28 @@ def get_modules():
 
 @app.route("/api/module/<module_name>", methods=["GET"])
 def get_module(module_name):
-    return jsonify(dm.get_module_data(module_name))
+    module_data = dm.get_module_data(module_name)
+    return jsonify(module_data) if module_data else ('', 404)
 
 @app.route("/api/progress", methods=["POST"])
 def update_progress():
-    data = request.json
-    dm.update_status(data["module"], data["subject"], data["status"])
-    return jsonify({"status": "success"})
+    data = request.get_json()
+    if not data or not all(k in data for k in ['module', 'subject', 'status']):
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    if dm.update_status(data["module"], data["subject"], data["status"]):
+        return jsonify({"status": "success"})
+    return jsonify({"error": "Update failed"}), 400
 
 @app.route("/api/delete", methods=["POST"])
 def delete_subject():
-    data = request.json
-    module = data.get("module")
-    subject = data.get("subject")
-    if not module or not subject:
-        return jsonify({"error": "Missing fields"}), 400
-
-    # Tente de supprimer la matière via DataManager
-    success = dm.delete_subject(module, subject)
-    if not success:
-        return jsonify({"error": f"Subject '{subject}' not found in module '{module}'"}), 404
-
-    return jsonify({"status": "deleted"}), 200
-
+    data = request.get_json()
+    if not data or not all(k in data for k in ['module', 'subject']):
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    if dm.delete_subject(data["module"], data["subject"]):
+        return jsonify({"status": "deleted"})
+    return jsonify({"error": "Subject not found"}), 404
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

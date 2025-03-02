@@ -1,4 +1,17 @@
-{
-  "modules": {},
-  "last_reset": "2025-02-24"
-}
+[
+  {
+      "module": "Mathematics",
+      "subjects": {
+          "Algebra": {"status": "done", "points": 5},
+          "Geometry": {"status": "in-progress", "points": 2},
+          "Calculus": {"status": "not-started", "points": 0}
+      }
+  },
+  {
+      "module": "Physics",
+      "subjects": {
+          "Mechanics": {"status": "done", "points": 5},
+          "Thermodynamics": {"status": "in-progress", "points": 2}
+      }
+  }
+]

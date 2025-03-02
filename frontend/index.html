@@ -1,68 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Bar Chart + Table</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    canvas {
-      max-width: 800px;
-      margin-bottom: 30px;
-    }
-    table, th, td {
-      border: 1px solid #ccc;
-      border-collapse: collapse;
-      padding: 8px;
-      text-align: left;
-    }
-    table {
-      width: 100%;
-      margin-top: 20px;
-    }
-    tfoot input, tfoot select {
-      width: 90%;
-      padding: 5px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Study Progress Radar</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { margin: 20px; font-family: Arial, sans-serif; }
+        #radarChart { max-width: 600px; margin: 20px auto; }
+        .container { text-align: center; }
+    </style>
 </head>
 <body>
-  <h1>Progress Overview</h1>
-  <canvas id="progressChart"></canvas>
+    <div class="container">
+        <h1>Study Progress Radar</h1>
+        <canvas id="radarChart"></canvas>
+    </div>
 
-  <h2>Liste des Matières</h2>
-  <table id="modulesTable">
-    <thead>
-      <tr>
-        <th>Module</th>
-        <th>Matière</th>
-        <th>Statut</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Dynamique -->
-    </tbody>
-    <tfoot>
-        <tr>
-          <!-- On fusionne les 3 colonnes en une seule -->
-          <td colspan="3">
-            <!-- Champ pour la nouvelle matière -->
-            <input
-              type="text"
-              id="newMatiereName"
-              placeholder="Nouvelle matière"
-              style="width: 100%;"
-            />
-          </td>
-        </tr>
-      </tfoot>
-      
-      
-  </table>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            try {
+                const response = await fetch('/api/modules');
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const { current } = await response.json();
+                if (!current || current.length === 0) throw new Error('No data available');
 
-  <script src="script.js"></script>
+                // Use first module for demonstration
+                const firstModule = current[0];
+                const labels = Object.keys(firstModule.subjects);
+                const dataValues = labels.map(subject => 
+                    firstModule.subjects[subject].points || 0
+                );
+
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `${firstModule.module} Progress`,
+                            data: dataValues,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 5,
+                                ticks: { 
+                                    stepSize: 1,
+                                    color: '#666'
+                                },
+                                grid: { color: 'rgba(200, 200, 200, 0.3)' },
+                                angleLines: { color: 'rgba(200, 200, 200, 0.3)' }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: true, position: 'top' }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load progress data. Please try again later.');
+            }
+        });
+    </script>
 </body>
 </html>
