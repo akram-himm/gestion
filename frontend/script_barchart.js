@@ -1,26 +1,19 @@
-// script_barchart.js
-
 let barChart = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Parse ?module= from the URL
   const params = new URLSearchParams(window.location.search);
   const moduleName = params.get("module");
 
-  // If no module is provided, show an alert and go back to radar
   if (!moduleName) {
     alert("No module specified!");
     window.location.href = "radar.html";
     return;
   }
 
-  // Display the module name in <h2>
   document.getElementById("moduleTitle").textContent = `Module: ${moduleName}`;
 
-  // Load data for this module
   await loadModuleDetails(moduleName);
 
-  // Add new subject on Enter key
   document.getElementById("newMatiereName").addEventListener("keypress", async (e) => {
     if (e.key === "Enter") {
       const subjectName = e.target.value.trim();
@@ -46,8 +39,9 @@ async function loadModuleDetails(moduleName) {
     const subjects = allModules[moduleName].subjects || [];
     drawBarChart(subjects);
     buildTable(moduleName, subjects);
+
   } catch (err) {
-    console.error("Error in loadModuleDetails:", err);
+    console.error("Error loading module details:", err);
   }
 }
 
@@ -72,10 +66,7 @@ function drawBarChart(subjects) {
     options: {
       responsive: false,
       scales: {
-        y: {
-          beginAtZero: true,
-          max: 2
-        }
+        y: { beginAtZero: true, max: 2 }
       }
     }
   });
@@ -93,7 +84,7 @@ function buildTable(moduleName, subjects) {
     tdMatiere.textContent = subj.name;
     tr.appendChild(tdMatiere);
 
-    // Statut dropdown
+    // Statut
     const tdStatut = document.createElement("td");
     const select = document.createElement("select");
     ["Done", "En cours", "Pas fait", "vide"].forEach(st => {
@@ -109,7 +100,7 @@ function buildTable(moduleName, subjects) {
     tdStatut.appendChild(select);
     tr.appendChild(tdStatut);
 
-    // Action (Delete)
+    // Delete
     const tdAction = document.createElement("td");
     const btnDelete = document.createElement("button");
     btnDelete.textContent = "Supprimer";
@@ -123,7 +114,6 @@ function buildTable(moduleName, subjects) {
   });
 }
 
-// POST to update a subject's status
 async function updateStatus(moduleName, subjectName, status) {
   try {
     await fetch("http://127.0.0.1:5000/api/progress", {
@@ -131,14 +121,12 @@ async function updateStatus(moduleName, subjectName, status) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ module: moduleName, subject: subjectName, status })
     });
-    // Refresh the chart & table
     await loadModuleDetails(moduleName);
   } catch (err) {
     console.error("Error in updateStatus:", err);
   }
 }
 
-// POST to delete a subject
 async function deleteSubject(moduleName, subjectName) {
   try {
     await fetch("http://127.0.0.1:5000/api/delete", {
@@ -146,7 +134,6 @@ async function deleteSubject(moduleName, subjectName) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ module: moduleName, subject: subjectName })
     });
-    // Refresh the chart & table
     await loadModuleDetails(moduleName);
   } catch (err) {
     console.error("Error in deleteSubject:", err);

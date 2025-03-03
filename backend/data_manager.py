@@ -57,7 +57,6 @@ class DataManager:
         today = datetime.date.today()
         last_reset_str = self.current_data.get("last_reset", str(today))
         last_reset_date = datetime.date.fromisoformat(last_reset_str)
-
         if today > last_reset_date:
             for module_info in self.current_data["modules"].values():
                 for subject in module_info["subjects"]:
@@ -71,14 +70,6 @@ class DataManager:
     def get_historical_data(self):
         return self.historical_data
 
-    def get_data_for_module(self, module_name):
-        module = self.current_data["modules"].get(module_name, {"subjects": []})
-        histo = self.historical_data.get(module_name, {})
-        return {
-            "current": module,
-            "historical": histo
-        }
-
     def update_status(self, module_name, subject_name, status):
         if module_name not in self.current_data["modules"]:
             self.current_data["modules"][module_name] = {"subjects": []}
@@ -90,38 +81,53 @@ class DataManager:
         else:
             subject["status"] = status
 
-        today_str = str(datetime.date.today())
-        if module_name not in self.historical_data:
-            self.historical_data[module_name] = {}
+        # Update historical data
         total_points = sum(
             2 if s["status"] == "Done" else 1 if s["status"] == "En cours" else 0
             for s in subjects
         )
+        if module_name not in self.historical_data:
+            self.historical_data[module_name] = {}
+        today_str = str(datetime.date.today())
         self.historical_data[module_name][today_str] = total_points
 
         self._save_current()
         self._save_historical()
-    
+
     def delete_subject(self, module_name, subject_name):
-    # Vérifie que le module existe
         if module_name not in self.current_data["modules"]:
             return False
-
         subjects = self.current_data["modules"][module_name].get("subjects", [])
-        # Filtre pour supprimer la matière dont le nom correspond
         new_subjects = [s for s in subjects if s["name"] != subject_name]
-
-        # Si aucune modification n'est faite, la matière n'existait pas
         if len(new_subjects) == len(subjects):
             return False
-
-        # Met à jour la liste des matières pour le module
         self.current_data["modules"][module_name]["subjects"] = new_subjects
         self._save_current()
         return True
 
+    def delete_module(self, module_name):
+        if module_name in self.current_data["modules"]:
+            del self.current_data["modules"][module_name]
+            self._save_current()
+            if module_name in self.historical_data:
+                del self.historical_data[module_name]
+                self._save_historical()
+            return True
+        return False
 
-# Pour tester localement, vous pouvez ajouter ce bloc, mais ce n'est pas nécessaire dans l'import normal.
+    def rename_module(self, old_name, new_name):
+        """Rename a module in both current_data and historical_data."""
+        if old_name not in self.current_data["modules"]:
+            return False
+        # If the new_name already exists, decide what to do.
+        # For simplicity, let's assume you just overwrite or handle it carefully.
+        self.current_data["modules"][new_name] = self.current_data["modules"].pop(old_name)
+        if old_name in self.historical_data:
+            self.historical_data[new_name] = self.historical_data.pop(old_name)
+        self._save_current()
+        self._save_historical()
+        return True
+
 if __name__ == "__main__":
     dm = DataManager("progress_data.json", "historical_data.json")
     print(dm.get_current_data())

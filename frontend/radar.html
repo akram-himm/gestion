@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>Radar Overview</title>
-  <!-- Chart.js for the radar -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
@@ -18,27 +17,68 @@
     input {
       margin-right: 10px;
     }
+    #moduleBar {
+      display: none;
+      background-color: #f2f2f2;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+    }
+    #renameSection {
+      display: none;
+      margin-top: 10px;
+    }
+    #renameSection input {
+      margin-right: 5px;
+    }
+    .dangerButton {
+      background-color: #e74c3c;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .infoButton {
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
   <h1>Radar Overview</h1>
-  <!-- Radar Chart -->
   <canvas id="radarChart" width="600" height="600"></canvas>
 
-  <!-- Create Module -->
   <div>
     <input type="text" id="newModuleName" placeholder="New Module Name" />
     <button id="createModuleBtn">Create Module</button>
   </div>
 
-  <!-- Radar logic in an external file -->
+  <!-- This top bar appears when you click a module in the radar -->
+  <div id="moduleBar">
+    <strong>Selected Module:</strong> <span id="selectedModuleName"></span>
+
+    <button id="renameBtn" class="infoButton">Rename</button>
+    <button id="deleteBtn" class="dangerButton">Delete</button>
+    <button id="detailBtn" class="infoButton">Go to Detail</button>
+
+    <div id="renameSection">
+      <input type="text" id="renameInput" placeholder="New Module Name" />
+      <button id="confirmRenameBtn" class="infoButton">Confirm Rename</button>
+      <button id="cancelRenameBtn">Cancel</button>
+    </div>
+  </div>
+
   <script src="script_radar.js"></script>
 
-  <!-- pageshow fix: if user hits the browser "Back" button, we re-run refreshRadar() -->
+  <!-- pageshow fix: if user hits back button to come here, re-run radar -->
   <script>
     window.addEventListener("pageshow", (event) => {
       if (event.persisted) {
-        // Page was restored from bfcache, so re-fetch data
         refreshRadar();
       }
     });

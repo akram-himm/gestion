@@ -12,34 +12,27 @@ CORS(app, resources={
     }
 })
 
-# Initialize your DataManager with the JSON files
 dm = DataManager("progress_data.json", "historical_data.json")
 
-# ----------------- Serve HTML files explicitly ----------------- #
 @app.route("/")
 def serve_default():
-    # By default, show the radar page
     return send_from_directory(app.static_folder, "radar.html")
 
 @app.route("/radar.html")
 def serve_radar():
-    # Serve the radar page
     return send_from_directory(app.static_folder, "radar.html")
 
 @app.route("/index.html")
 def serve_index():
-    # Serve the detail page (bar chart + table)
     return send_from_directory(app.static_folder, "index.html")
 
-# Catch-all route to serve any other static file (scripts, images, etc.)
 @app.route("/<path:path>")
 def serve_static_file(path):
     return send_from_directory(app.static_folder, path)
 
-# ----------------- API Routes ----------------- #
+# ----------------- API ROUTES ----------------- #
 @app.route("/api/modules", methods=["GET"])
 def get_modules():
-    # Optional daily reset if that's your logic
     dm.daily_reset()
     return jsonify({
         "current": dm.get_current_data(),
@@ -71,6 +64,33 @@ def delete_subject():
         return jsonify({"error": f"Subject '{subject}' not found in module '{module}'"}), 404
 
     return jsonify({"status": "deleted"}), 200
+
+@app.route("/api/delete_module", methods=["POST"])
+def delete_module():
+    data = request.json
+    module = data.get("module")
+    if not module:
+        return jsonify({"error": "Missing module name"}), 400
+
+    success = dm.delete_module(module)
+    if not success:
+        return jsonify({"error": f"Module '{module}' not found"}), 404
+
+    return jsonify({"status": "deleted"}), 200
+
+@app.route("/api/rename_module", methods=["POST"])
+def rename_module():
+    data = request.json
+    old_name = data.get("oldName")
+    new_name = data.get("newName")
+    if not old_name or not new_name:
+        return jsonify({"error": "Missing fields"}), 400
+
+    success = dm.rename_module(old_name, new_name)
+    if not success:
+        return jsonify({"error": f"Module '{old_name}' not found"}), 404
+
+    return jsonify({"status": "renamed"}), 200
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
