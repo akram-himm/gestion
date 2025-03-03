@@ -1,25 +1,47 @@
-<!-- frontend/radar.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Module Evolution Radar</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-      }
-      canvas {
-        max-width: 800px;
-        margin: 20px auto;
-        display: block;
-      }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Radar Overview</title>
+  <!-- Chart.js for the radar -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    canvas {
+      max-width: 600px;
+      margin: 20px auto;
+      display: block;
+    }
+    input {
+      margin-right: 10px;
+    }
+  </style>
 </head>
 <body>
-    <h1>Module Evolution Radar</h1>
-    <canvas id="radarChart" width="800" height="600"></canvas>
-    <script src="script_radar.js"></script>
+  <h1>Radar Overview</h1>
+  <!-- Radar Chart -->
+  <canvas id="radarChart" width="600" height="600"></canvas>
+
+  <!-- Create Module -->
+  <div>
+    <input type="text" id="newModuleName" placeholder="New Module Name" />
+    <button id="createModuleBtn">Create Module</button>
+  </div>
+
+  <!-- Radar logic in an external file -->
+  <script src="script_radar.js"></script>
+
+  <!-- pageshow fix: if user hits the browser "Back" button, we re-run refreshRadar() -->
+  <script>
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) {
+        // Page was restored from bfcache, so re-fetch data
+        refreshRadar();
+      }
+    });
+  </script>
 </body>
 </html>

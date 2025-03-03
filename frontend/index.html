@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Bar Chart + Table</title>
+  <meta charset="UTF-8" />
+  <title>Module Details</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
@@ -11,7 +11,8 @@
     }
     canvas {
       max-width: 800px;
-      margin-bottom: 30px;
+      margin: 20px auto;
+      display: block;
     }
     table, th, td {
       border: 1px solid #ccc;
@@ -23,46 +24,41 @@
       width: 100%;
       margin-top: 20px;
     }
-    tfoot input, tfoot select {
-      width: 90%;
+    tfoot input {
+      width: 95%;
       padding: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>Progress Overview</h1>
-  <canvas id="progressChart"></canvas>
+  <h1>Module Details</h1>
+  <!-- Simple link back to radar -->
+  <a href="radar.html">← Back to Radar</a>
 
-  <h2>Liste des Matières</h2>
+  <h2 id="moduleTitle"></h2>
+  <canvas id="progressChart" width="800" height="400"></canvas>
+
+  <h3>Liste des Matières</h3>
   <table id="modulesTable">
     <thead>
       <tr>
-        <th>Module</th>
         <th>Matière</th>
         <th>Statut</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
-      <!-- Dynamique -->
+      <!-- Dynamically filled -->
     </tbody>
     <tfoot>
-        <tr>
-          <!-- On fusionne les 3 colonnes en une seule -->
-          <td colspan="3">
-            <!-- Champ pour la nouvelle matière -->
-            <input
-              type="text"
-              id="newMatiereName"
-              placeholder="Nouvelle matière"
-              style="width: 100%;"
-            />
-          </td>
-        </tr>
-      </tfoot>
-      
-      
+      <tr>
+        <td colspan="3">
+          <input type="text" id="newMatiereName" placeholder="Nouvelle matière" />
+        </td>
+      </tr>
+    </tfoot>
   </table>
 
-  <script src="script.js"></script>
+  <script src="script_barchart.js"></script>
 </body>
 </html>

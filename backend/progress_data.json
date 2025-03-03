@@ -1,0 +1,49 @@
+{
+  "modules": {
+    "Math": {
+      "subjects": [
+        {
+          "name": "Algebra",
+          "status": "Pas fait"
+        },
+        {
+          "name": "Analysis",
+          "status": "Pas fait"
+        }
+      ]
+    },
+    "Programming": {
+      "subjects": [
+        {
+          "name": "Python",
+          "status": "Pas fait"
+        },
+        {
+          "name": "C++",
+          "status": "Pas fait"
+        }
+      ]
+    },
+    "Law": {
+      "subjects": [
+        {
+          "name": "Civil Law",
+          "status": "Pas fait"
+        },
+        {
+          "name": "Criminal Law",
+          "status": "Done"
+        }
+      ]
+    },
+    "bidooon": {
+      "subjects": [
+        {
+          "name": "placeholder",
+          "status": "vide"
+        }
+      ]
+    }
+  },
+  "last_reset": "2025-03-02"
+}
