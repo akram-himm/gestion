@@ -1,29 +1,5 @@
 {
   "modules": {
-    "Math": {
-      "subjects": [
-        {
-          "name": "Algebra",
-          "status": "Pas fait"
-        },
-        {
-          "name": "Analysis",
-          "status": "Pas fait"
-        }
-      ]
-    },
-    "Programming": {
-      "subjects": [
-        {
-          "name": "Python",
-          "status": "Done"
-        },
-        {
-          "name": "C++",
-          "status": "Done"
-        }
-      ]
-    },
     "Law": {
       "subjects": [
         {
@@ -40,10 +16,34 @@
       "subjects": [
         {
           "name": "placeholder",
-          "status": "Done"
+          "status": "Pas fait"
+        }
+      ]
+    },
+    "skmq": {
+      "subjects": [
+        {
+          "name": "placeholder",
+          "status": "En cours"
+        }
+      ]
+    },
+    "ddkfjdl": {
+      "subjects": [
+        {
+          "name": "placeholder",
+          "status": "vide"
+        }
+      ]
+    },
+    "jhdf": {
+      "subjects": [
+        {
+          "name": "placeholder",
+          "status": "vide"
         }
       ]
     }
   },
-  "last_reset": "2025-03-03"
+  "last_reset": "2025-03-05"
 }
