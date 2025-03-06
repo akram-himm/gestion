@@ -24,7 +24,7 @@
       "subjects": [
         {
           "name": "placeholder",
-          "status": "En cours"
+          "status": "Pas fait"
         }
       ]
     },
@@ -32,18 +32,22 @@
       "subjects": [
         {
           "name": "placeholder",
+          "status": "Done"
+        },
+        {
+          "name": "djfsm",
           "status": "vide"
         }
       ]
     },
-    "jhdf": {
+    "fkjsd": {
       "subjects": [
         {
           "name": "placeholder",
-          "status": "vide"
+          "status": "En cours"
         }
       ]
     }
   },
-  "last_reset": "2025-03-05"
+  "last_reset": "2025-03-07"
 }

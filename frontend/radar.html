@@ -1,87 +1,76 @@
+<!-- radar.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Radar Overview</title>
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
     }
+    /* Le canvas du radar */
     canvas {
-      max-width: 600px;
+      max-width: 600px; /* Ajuste la taille si nécessaire */
       margin: 20px auto;
       display: block;
     }
-    input {
-      margin-right: 10px;
-    }
+    /* Barre d’action pour le module sélectionné */
     #moduleBar {
       display: none;
-      background-color: #f2f2f2;
-      padding: 10px;
-      margin: 10px 0;
+      background-color: #f9f9f9;
       border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 10px;
     }
     #renameSection {
       display: none;
       margin-top: 10px;
     }
-    #renameSection input {
-      margin-right: 5px;
-    }
-    .dangerButton {
-      background-color: #e74c3c;
-      color: #fff;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
-      margin-left: 10px;
-    }
-    .infoButton {
-      background-color: #3498db;
-      color: #fff;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
-      margin-left: 10px;
+    /* Menu contextuel pour choisir un module si plusieurs points se chevauchent */
+    #moduleChoiceMenu {
+      display: none;
+      position: absolute;
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 5px;
+      z-index: 999;
     }
   </style>
 </head>
 <body>
   <h1>Radar Overview</h1>
+  
+  <!-- Le canvas pour le diagramme radar -->
   <canvas id="radarChart" width="600" height="600"></canvas>
-
+  
+  <!-- Section pour créer un nouveau module -->
   <div>
     <input type="text" id="newModuleName" placeholder="New Module Name" />
     <button id="createModuleBtn">Create Module</button>
   </div>
 
-  <!-- This top bar appears when you click a module in the radar -->
+  <!-- Barre d’action pour le module sélectionné -->
   <div id="moduleBar">
     <strong>Selected Module:</strong> <span id="selectedModuleName"></span>
-
-    <button id="renameBtn" class="infoButton">Rename</button>
-    <button id="deleteBtn" class="dangerButton">Delete</button>
-    <button id="detailBtn" class="infoButton">Go to Detail</button>
-
+    <button id="renameBtn">Rename</button>
+    <button id="deleteBtn">Delete</button>
+    <button id="detailBtn">Go to Detail</button>
+    
+    <!-- Section pour renommer le module -->
     <div id="renameSection">
       <input type="text" id="renameInput" placeholder="New Module Name" />
-      <button id="confirmRenameBtn" class="infoButton">Confirm Rename</button>
+      <button id="confirmRenameBtn">Confirm Rename</button>
       <button id="cancelRenameBtn">Cancel</button>
     </div>
   </div>
 
-  <script src="script_radar.js"></script>
+  <!-- Menu contextuel pour choisir un module si plusieurs points sont cliqués -->
+  <div id="moduleChoiceMenu"></div>
 
-  <!-- pageshow fix: if user hits back button to come here, re-run radar -->
-  <script>
-    window.addEventListener("pageshow", (event) => {
-      if (event.persisted) {
-        refreshRadar();
-      }
-    });
-  </script>
+  <!-- Script principal pour gérer le radar -->
+  <script src="script_radar.js"></script>
 </body>
 </html>
