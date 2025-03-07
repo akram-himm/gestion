@@ -1,14 +1,14 @@
 let radarChart = null;
-let selectedModule = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Radar script running!");
   await refreshRadar();
 
-  // Créer un module
+  // Création d'un module
   document.getElementById("createModuleBtn").addEventListener("click", async () => {
     const moduleName = document.getElementById("newModuleName").value.trim();
     if (!moduleName) return;
+    // Créer un module (placeholder, statut "vide")
     await fetch("http://127.0.0.1:5000/api/progress", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -22,43 +22,146 @@ document.addEventListener("DOMContentLoaded", async () => {
     await refreshRadar();
   });
 
-  // rename / delete / detail
-  document.getElementById("renameBtn").addEventListener("click", () => {
-    document.getElementById("renameSection").style.display = "block";
-    document.getElementById("renameInput").value = "";
-  });
-  document.getElementById("cancelRenameBtn").addEventListener("click", () => {
-    document.getElementById("renameSection").style.display = "none";
-  });
-  document.getElementById("confirmRenameBtn").addEventListener("click", async () => {
-    const newName = document.getElementById("renameInput").value.trim();
-    if (!newName || !selectedModule) return;
-    await renameModule(selectedModule, newName);
-    document.getElementById("renameSection").style.display = "none";
-    await refreshRadar();
-  });
-  document.getElementById("deleteBtn").addEventListener("click", async () => {
-    if (!selectedModule) return;
-    if (!confirm(`Are you sure you want to delete "${selectedModule}"?`)) {
-      return;
-    }
-    await deleteModule(selectedModule);
-    selectedModule = null;
-    await refreshRadar();
-  });
-  document.getElementById("detailBtn").addEventListener("click", () => {
-    if (!selectedModule) return;
-    window.location.href = `index.html?module=${encodeURIComponent(selectedModule)}`;
-  });
-
-  // Fix: si on revient via "Back", on rafraîchit
-  window.addEventListener("pageshow", (event) => {
-    if (event.persisted) {
-      refreshRadar();
-    }
+  // Gérer le clic droit (contextmenu) sur le canvas
+  const canvas = document.getElementById("radarChart");
+  canvas.addEventListener("contextmenu", (evt) => {
+    evt.preventDefault(); // on empêche le menu contextuel par défaut
+    handleRightClick(evt);
   });
 });
 
+/** 
+ * CLIC GAUCHE = par défaut Chart.js -> onClick 
+ * => on va configurer plus bas dans 'options.onClick'
+ */
+
+/** Gère le clic droit */
+function handleRightClick(evt) {
+  hideModuleContextMenu(); // fermer tout menu existant
+
+  // Obtenir le(s) point(s) sous la souris
+  const elements = radarChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, false);
+  if (elements.length === 0) {
+    return; // pas de module sous le clic
+  }
+  if (elements.length === 1) {
+    // Un seul point => rename/delete direct
+    const index = elements[0].index;
+    const moduleClicked = radarChart.data.labels[index];
+    if (moduleClicked === "(empty)") return;
+    showContextMenu(evt, moduleClicked);
+  } else {
+    // Plusieurs points => liste de modules
+    let modulesClicked = elements.map(el => radarChart.data.labels[el.index]);
+    modulesClicked = Array.from(new Set(modulesClicked)).filter(m => m !== "(empty)");
+    if (modulesClicked.length === 1) {
+      showContextMenu(evt, modulesClicked[0]);
+    } else {
+      // Proposer un menu pour choisir le module => rename/delete
+      showMultipleModuleContext(evt, modulesClicked);
+    }
+  }
+}
+
+/** Affiche le menu contextuel (clic droit) pour un module unique */
+function showContextMenu(evt, moduleName) {
+  const menu = document.getElementById("moduleContextMenu");
+  menu.innerHTML = "";
+
+  // Titre
+  const title = document.createElement("div");
+  title.textContent = `Module: ${moduleName}`;
+  title.style.fontWeight = "bold";
+  title.style.borderBottom = "1px solid #ccc";
+  title.style.marginBottom = "5px";
+  menu.appendChild(title);
+
+  // Renommer
+  const renameItem = document.createElement("div");
+  renameItem.textContent = "Rename Module";
+  renameItem.style.cursor = "pointer";
+  renameItem.style.padding = "5px";
+  renameItem.addEventListener("click", async () => {
+    const newName = prompt(`Enter new name for "${moduleName}"`);
+    if (newName) {
+      await renameModule(moduleName, newName);
+    }
+    hideModuleContextMenu();
+  });
+  menu.appendChild(renameItem);
+
+  // Supprimer
+  const deleteItem = document.createElement("div");
+  deleteItem.textContent = "Delete Module";
+  deleteItem.style.cursor = "pointer";
+  deleteItem.style.padding = "5px";
+  deleteItem.addEventListener("click", async () => {
+    if (confirm(`Are you sure you want to delete "${moduleName}"?`)) {
+      await deleteModule(moduleName);
+    }
+    hideModuleContextMenu();
+  });
+  menu.appendChild(deleteItem);
+
+  // Positionner le menu
+  menu.style.display = "block";
+  menu.style.visibility = "hidden";
+
+  const rect = radarChart.canvas.getBoundingClientRect();
+  const xPos = rect.left + window.scrollX + evt.offsetX;
+  const yPos = rect.top + window.scrollY + evt.offsetY;
+
+  menu.style.left = xPos + "px";
+  menu.style.top = yPos + "px";
+  menu.style.visibility = "visible";
+}
+
+/** Affiche un menu pour choisir parmi plusieurs modules => rename/delete */
+function showMultipleModuleContext(evt, modulesClicked) {
+  const menu = document.getElementById("moduleContextMenu");
+  menu.innerHTML = "";
+
+  const title = document.createElement("div");
+  title.textContent = "Multiple modules:";
+  title.style.fontWeight = "bold";
+  title.style.borderBottom = "1px solid #ccc";
+  title.style.marginBottom = "5px";
+  menu.appendChild(title);
+
+  modulesClicked.forEach(mod => {
+    const item = document.createElement("div");
+    item.textContent = mod;
+    item.style.cursor = "pointer";
+    item.style.padding = "5px";
+    item.addEventListener("click", () => {
+      hideModuleContextMenu();
+      // On ouvre un menu contextuel rename/delete pour ce module
+      showContextMenu(evt, mod);
+    });
+    menu.appendChild(item);
+  });
+
+  // Positionner le menu
+  menu.style.display = "block";
+  menu.style.visibility = "hidden";
+
+  const rect = radarChart.canvas.getBoundingClientRect();
+  const xPos = rect.left + window.scrollX + evt.offsetX;
+  const yPos = rect.top + window.scrollY + evt.offsetY;
+
+  menu.style.left = xPos + "px";
+  menu.style.top = yPos + "px";
+  menu.style.visibility = "visible";
+}
+
+/** Cache le menu contextuel clic droit */
+function hideModuleContextMenu() {
+  const menu = document.getElementById("moduleContextMenu");
+  menu.style.display = "none";
+  menu.style.visibility = "hidden";
+}
+
+/** Actualise le radar */
 async function refreshRadar() {
   try {
     const resp = await fetch("http://127.0.0.1:5000/api/modules");
@@ -85,11 +188,6 @@ async function refreshRadar() {
       radarChart.destroy();
     }
 
-    // Gradient optionnel
-    const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-    gradient.addColorStop(0, "rgba(54, 162, 235, 0.4)");
-    gradient.addColorStop(1, "rgba(54, 162, 235, 0.0)");
-
     radarChart = new Chart(ctx, {
       type: "radar",
       data: {
@@ -97,7 +195,7 @@ async function refreshRadar() {
         datasets: [{
           label: "Total Points",
           data: totalPoints,
-          backgroundColor: gradient,
+          backgroundColor: "rgba(54, 162, 235, 0.2)",
           borderColor: "rgba(54, 162, 235, 1)",
           borderWidth: 2,
           pointBackgroundColor: "rgba(54, 162, 235, 1)",
@@ -116,56 +214,63 @@ async function refreshRadar() {
             ticks: { stepSize: 2 }
           }
         },
-        onClick: (evt, elements, chart) => {
-          hideModuleChoiceMenu(); // cacher le menu si ouvert
-
-          if (elements.length > 0) {
-            if (elements.length === 1) {
-              // Un seul point
-              const index = elements[0].index;
-              const moduleClicked = moduleNames[index];
-              if (moduleClicked === "(empty)") return;
-              console.log("Clicked on module:", moduleClicked);
-              selectedModule = moduleClicked;
-              document.getElementById("selectedModuleName").textContent = moduleClicked;
-              document.getElementById("moduleBar").style.display = "block";
-              document.getElementById("renameSection").style.display = "none";
+        // Clic gauche => aller en détail
+        onClick: (evt, elements) => {
+          hideModuleChoiceMenu();
+          if (elements.length === 0) return;
+          if (elements.length === 1) {
+            const index = elements[0].index;
+            const moduleClicked = radarChart.data.labels[index];
+            if (moduleClicked === "(empty)") return;
+            // Redirection direct
+            window.location.href = `index.html?module=${encodeURIComponent(moduleClicked)}`;
+          } else {
+            // Plusieurs points => choix du module => détail
+            let modulesClicked = elements.map(el => radarChart.data.labels[el.index]);
+            modulesClicked = Array.from(new Set(modulesClicked)).filter(m => m !== "(empty)");
+            if (modulesClicked.length === 1) {
+              window.location.href = `index.html?module=${encodeURIComponent(modulesClicked[0])}`;
             } else {
-              // Plusieurs points
-              let modulesClicked = elements.map(el => moduleNames[el.index]);
-              modulesClicked = Array.from(new Set(modulesClicked)).filter(m => m !== "(empty)");
-
-              if (modulesClicked.length === 1) {
-                // Finalement un seul module
-                selectedModule = modulesClicked[0];
-                document.getElementById("selectedModuleName").textContent = selectedModule;
-                document.getElementById("moduleBar").style.display = "block";
-                document.getElementById("renameSection").style.display = "none";
-              } else {
-                // Afficher la liste "à côté du point"
-                showModuleChoiceMenu(evt, elements, chart, modulesClicked);
-              }
+              showModuleChoiceMenu(evt, elements, modulesClicked);
             }
           }
         }
       }
     });
 
-    document.getElementById("moduleBar").style.display = "none";
   } catch (err) {
     console.error("Error in refreshRadar:", err);
   }
 }
 
-/** Affiche la liste cliquable à l'emplacement du point (en tenant compte du scroll) */
-function showModuleChoiceMenu(evt, elements, chart, modulesClicked) {
+/** Affiche un menu pour choisir un module si plusieurs points (clic gauche) => redirection détail */
+function showModuleChoiceMenu(evt, elements, modulesClicked) {
   const menuDiv = document.getElementById("moduleChoiceMenu");
   menuDiv.innerHTML = "";
 
-  // Calcul de la moyenne x,y (canvas coords)
+  const title = document.createElement("div");
+  title.textContent = "Multiple modules. Select one:";
+  title.style.fontWeight = "bold";
+  title.style.borderBottom = "1px solid #ccc";
+  title.style.marginBottom = "5px";
+  menuDiv.appendChild(title);
+
+  modulesClicked.forEach(mod => {
+    const item = document.createElement("div");
+    item.textContent = mod;
+    item.style.cursor = "pointer";
+    item.style.padding = "5px";
+    item.addEventListener("click", () => {
+      window.location.href = `index.html?module=${encodeURIComponent(mod)}`;
+    });
+    menuDiv.appendChild(item);
+  });
+
+  // Calculer la position (moyenne x,y)
+  const rect = radarChart.canvas.getBoundingClientRect();
   let sumX = 0, sumY = 0;
   for (const el of elements) {
-    const meta = chart.getDatasetMeta(el.datasetIndex);
+    const meta = radarChart.getDatasetMeta(el.datasetIndex);
     const props = meta.data[el.index].getProps(["x", "y"], true);
     sumX += props.x;
     sumY += props.y;
@@ -173,62 +278,30 @@ function showModuleChoiceMenu(evt, elements, chart, modulesClicked) {
   const avgX = sumX / elements.length;
   const avgY = sumY / elements.length;
 
-  // Convertir coords canvas -> coords page
-  const rect = chart.canvas.getBoundingClientRect();
-  let xPos = rect.left + window.scrollX + avgX;
-  let yPos = rect.top + window.scrollY + avgY;
-
-  // Afficher le menu pour mesurer sa taille
   menuDiv.style.display = "block";
   menuDiv.style.visibility = "hidden";
 
-  // Titre
-  const title = document.createElement("div");
-  title.textContent = "Select a module:";
-  title.style.fontWeight = "bold";
-  title.style.borderBottom = "1px solid #ccc";
-  title.style.marginBottom = "5px";
-  menuDiv.appendChild(title);
-
-  // Liste de modules
-  modulesClicked.forEach(mod => {
-    const item = document.createElement("div");
-    item.textContent = mod;
-    item.style.cursor = "pointer";
-    item.style.borderBottom = "1px solid #eee";
-    item.style.padding = "5px";
-    item.addEventListener("click", () => {
-      selectedModule = mod;
-      document.getElementById("selectedModuleName").textContent = mod;
-      document.getElementById("moduleBar").style.display = "block";
-      hideModuleChoiceMenu();
-    });
-    menuDiv.appendChild(item);
-  });
-
-  // Mesurer le menu
   const w = menuDiv.offsetWidth;
   const h = menuDiv.offsetHeight;
 
-  // On veut le placer "à gauche" du point => xPos -= w + marge
-  const margeX = 10;
-  const margeY = 10;
-  xPos -= (w + margeX);
-  yPos -= (h / 2) + margeY;
+  const offsetX = - (w + 10);
+  const offsetY = - (h / 2) - 10;
+  const xPos = rect.left + window.scrollX + avgX + offsetX;
+  const yPos = rect.top + window.scrollY + avgY + offsetY;
 
   menuDiv.style.left = xPos + "px";
   menuDiv.style.top = yPos + "px";
   menuDiv.style.visibility = "visible";
 }
 
-/** Cache le menu contextuel */
+/** Cache le menu "plusieurs modules" */
 function hideModuleChoiceMenu() {
   const menuDiv = document.getElementById("moduleChoiceMenu");
   menuDiv.style.display = "none";
   menuDiv.style.visibility = "hidden";
 }
 
-/** Renommer un module */
+/** rename module */
 async function renameModule(oldName, newName) {
   try {
     const resp = await fetch("http://127.0.0.1:5000/api/rename_module", {
@@ -247,7 +320,7 @@ async function renameModule(oldName, newName) {
   }
 }
 
-/** Supprimer un module */
+/** delete module */
 async function deleteModule(moduleName) {
   try {
     const resp = await fetch("http://127.0.0.1:5000/api/delete_module", {

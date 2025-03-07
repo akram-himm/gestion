@@ -1,35 +1,30 @@
-<!-- radar.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Radar Overview</title>
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
     }
-    /* Le canvas du radar */
+    /* Canvas du radar */
     canvas {
-      max-width: 600px; /* Ajuste la taille si nécessaire */
+      max-width: 600px;
       margin: 20px auto;
       display: block;
     }
-    /* Barre d’action pour le module sélectionné */
-    #moduleBar {
+    /* Menu contextuel clic droit : renommer/supprimer */
+    #moduleContextMenu {
       display: none;
-      background-color: #f9f9f9;
+      position: absolute;
+      background-color: white;
       border: 1px solid #ccc;
-      padding: 10px;
-      margin-top: 10px;
+      padding: 5px;
+      z-index: 999;
     }
-    #renameSection {
-      display: none;
-      margin-top: 10px;
-    }
-    /* Menu contextuel pour choisir un module si plusieurs points se chevauchent */
+    /* Menu pour multiples modules sur clic gauche */
     #moduleChoiceMenu {
       display: none;
       position: absolute;
@@ -42,35 +37,21 @@
 </head>
 <body>
   <h1>Radar Overview</h1>
-  
-  <!-- Le canvas pour le diagramme radar -->
+
   <canvas id="radarChart" width="600" height="600"></canvas>
-  
-  <!-- Section pour créer un nouveau module -->
+
+  <!-- Création de module -->
   <div>
     <input type="text" id="newModuleName" placeholder="New Module Name" />
     <button id="createModuleBtn">Create Module</button>
   </div>
 
-  <!-- Barre d’action pour le module sélectionné -->
-  <div id="moduleBar">
-    <strong>Selected Module:</strong> <span id="selectedModuleName"></span>
-    <button id="renameBtn">Rename</button>
-    <button id="deleteBtn">Delete</button>
-    <button id="detailBtn">Go to Detail</button>
-    
-    <!-- Section pour renommer le module -->
-    <div id="renameSection">
-      <input type="text" id="renameInput" placeholder="New Module Name" />
-      <button id="confirmRenameBtn">Confirm Rename</button>
-      <button id="cancelRenameBtn">Cancel</button>
-    </div>
-  </div>
+  <!-- Menu contextuel pour clic droit (rename/delete) -->
+  <div id="moduleContextMenu"></div>
 
-  <!-- Menu contextuel pour choisir un module si plusieurs points sont cliqués -->
+  <!-- Menu de choix si plusieurs modules (clic gauche) -->
   <div id="moduleChoiceMenu"></div>
 
-  <!-- Script principal pour gérer le radar -->
   <script src="script_radar.js"></script>
 </body>
 </html>
