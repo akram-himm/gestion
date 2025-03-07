@@ -47,6 +47,22 @@
           "status": "En cours"
         }
       ]
+    },
+    "jfdk": {
+      "subjects": [
+        {
+          "name": "placeholder",
+          "status": "vide"
+        }
+      ]
+    },
+    "dkfj": {
+      "subjects": [
+        {
+          "name": "placeholder",
+          "status": "vide"
+        }
+      ]
     }
   },
   "last_reset": "2025-03-07"
