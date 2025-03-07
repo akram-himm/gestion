@@ -9,13 +9,12 @@
       font-family: Arial, sans-serif;
       margin: 20px;
     }
-    /* Canvas du radar */
     canvas {
       max-width: 600px;
       margin: 20px auto;
       display: block;
     }
-    /* Menu contextuel clic droit : renommer/supprimer */
+    /* Menu contextuel clic droit */
     #moduleContextMenu {
       display: none;
       position: absolute;
@@ -24,7 +23,7 @@
       padding: 5px;
       z-index: 999;
     }
-    /* Menu pour multiples modules sur clic gauche */
+    /* Menu pour multiples modules (clic gauche) */
     #moduleChoiceMenu {
       display: none;
       position: absolute;
@@ -37,19 +36,17 @@
 </head>
 <body>
   <h1>Radar Overview</h1>
-
   <canvas id="radarChart" width="600" height="600"></canvas>
 
-  <!-- Création de module -->
   <div>
     <input type="text" id="newModuleName" placeholder="New Module Name" />
     <button id="createModuleBtn">Create Module</button>
   </div>
 
-  <!-- Menu contextuel pour clic droit (rename/delete) -->
+  <!-- Menu contextuel clic droit -->
   <div id="moduleContextMenu"></div>
 
-  <!-- Menu de choix si plusieurs modules (clic gauche) -->
+  <!-- Menu de choix si plusieurs points en clic gauche -->
   <div id="moduleChoiceMenu"></div>
 
   <script src="script_radar.js"></script>

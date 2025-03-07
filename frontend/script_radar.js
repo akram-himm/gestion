@@ -4,11 +4,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log("Radar script running!");
   await refreshRadar();
 
-  // Création d'un module
+  // Créer un module
   document.getElementById("createModuleBtn").addEventListener("click", async () => {
     const moduleName = document.getElementById("newModuleName").value.trim();
     if (!moduleName) return;
-    // Créer un module (placeholder, statut "vide")
     await fetch("http://127.0.0.1:5000/api/progress", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -22,42 +21,49 @@ document.addEventListener("DOMContentLoaded", async () => {
     await refreshRadar();
   });
 
-  // Gérer le clic droit (contextmenu) sur le canvas
+  // Clic droit sur le canvas
   const canvas = document.getElementById("radarChart");
   canvas.addEventListener("contextmenu", (evt) => {
-    evt.preventDefault(); // on empêche le menu contextuel par défaut
+    evt.preventDefault();
     handleRightClick(evt);
+  });
+
+  // Fermer le menu contextuel si on clique en dehors
+  document.addEventListener("click", (evt) => {
+    const menu = document.getElementById("moduleContextMenu");
+    if (!menu.contains(evt.target)) {
+      hideModuleContextMenu();
+    }
+  });
+
+  // Fermer le menu "multiples modules" si on clique en dehors
+  document.addEventListener("click", (evt) => {
+    const choiceMenu = document.getElementById("moduleChoiceMenu");
+    if (!choiceMenu.contains(evt.target)) {
+      hideModuleChoiceMenu();
+    }
   });
 });
 
-/** 
- * CLIC GAUCHE = par défaut Chart.js -> onClick 
- * => on va configurer plus bas dans 'options.onClick'
- */
-
 /** Gère le clic droit */
 function handleRightClick(evt) {
-  hideModuleContextMenu(); // fermer tout menu existant
+  hideModuleContextMenu();
 
-  // Obtenir le(s) point(s) sous la souris
   const elements = radarChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, false);
-  if (elements.length === 0) {
-    return; // pas de module sous le clic
-  }
+  if (elements.length === 0) return;
+
   if (elements.length === 1) {
-    // Un seul point => rename/delete direct
     const index = elements[0].index;
     const moduleClicked = radarChart.data.labels[index];
     if (moduleClicked === "(empty)") return;
     showContextMenu(evt, moduleClicked);
   } else {
-    // Plusieurs points => liste de modules
+    // Plusieurs points
     let modulesClicked = elements.map(el => radarChart.data.labels[el.index]);
     modulesClicked = Array.from(new Set(modulesClicked)).filter(m => m !== "(empty)");
     if (modulesClicked.length === 1) {
       showContextMenu(evt, modulesClicked[0]);
     } else {
-      // Proposer un menu pour choisir le module => rename/delete
       showMultipleModuleContext(evt, modulesClicked);
     }
   }
@@ -67,6 +73,11 @@ function handleRightClick(evt) {
 function showContextMenu(evt, moduleName) {
   const menu = document.getElementById("moduleContextMenu");
   menu.innerHTML = "";
+
+  // Empêcher la propagation des clics à l'intérieur du menu
+  menu.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
 
   // Titre
   const title = document.createElement("div");
@@ -81,12 +92,9 @@ function showContextMenu(evt, moduleName) {
   renameItem.textContent = "Rename Module";
   renameItem.style.cursor = "pointer";
   renameItem.style.padding = "5px";
-  renameItem.addEventListener("click", async () => {
-    const newName = prompt(`Enter new name for "${moduleName}"`);
-    if (newName) {
-      await renameModule(moduleName, newName);
-    }
-    hideModuleContextMenu();
+  renameItem.addEventListener("click", (e) => {
+    e.stopPropagation(); // ne pas fermer le menu
+    showRenameForm(menu, moduleName);
   });
   menu.appendChild(renameItem);
 
@@ -95,7 +103,8 @@ function showContextMenu(evt, moduleName) {
   deleteItem.textContent = "Delete Module";
   deleteItem.style.cursor = "pointer";
   deleteItem.style.padding = "5px";
-  deleteItem.addEventListener("click", async () => {
+  deleteItem.addEventListener("click", async (e) => {
+    e.stopPropagation();
     if (confirm(`Are you sure you want to delete "${moduleName}"?`)) {
       await deleteModule(moduleName);
     }
@@ -103,7 +112,7 @@ function showContextMenu(evt, moduleName) {
   });
   menu.appendChild(deleteItem);
 
-  // Positionner le menu
+  // Position
   menu.style.display = "block";
   menu.style.visibility = "hidden";
 
@@ -116,10 +125,51 @@ function showContextMenu(evt, moduleName) {
   menu.style.visibility = "visible";
 }
 
-/** Affiche un menu pour choisir parmi plusieurs modules => rename/delete */
+/** Affiche un mini-form de renommage dans le menu contextuel */
+function showRenameForm(menu, oldModuleName) {
+  menu.innerHTML = ""; // vider le menu pour y mettre le formulaire
+
+  const label = document.createElement("div");
+  label.textContent = `Renaming "${oldModuleName}"`;
+  label.style.fontWeight = "bold";
+  label.style.marginBottom = "5px";
+  menu.appendChild(label);
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.placeholder = "New name";
+  menu.appendChild(input);
+
+  const okBtn = document.createElement("button");
+  okBtn.textContent = "OK";
+  okBtn.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    const newName = input.value.trim();
+    if (newName) {
+      await renameModule(oldModuleName, newName);
+    }
+    hideModuleContextMenu();
+  });
+  menu.appendChild(okBtn);
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    hideModuleContextMenu();
+  });
+  menu.appendChild(cancelBtn);
+}
+
+/** Menu pour multiples modules => rename/delete */
 function showMultipleModuleContext(evt, modulesClicked) {
   const menu = document.getElementById("moduleContextMenu");
   menu.innerHTML = "";
+
+  // Empêcher la propagation à l'intérieur du menu
+  menu.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
 
   const title = document.createElement("div");
   title.textContent = "Multiple modules:";
@@ -133,15 +183,14 @@ function showMultipleModuleContext(evt, modulesClicked) {
     item.textContent = mod;
     item.style.cursor = "pointer";
     item.style.padding = "5px";
-    item.addEventListener("click", () => {
+    item.addEventListener("click", (e) => {
+      e.stopPropagation();
       hideModuleContextMenu();
-      // On ouvre un menu contextuel rename/delete pour ce module
-      showContextMenu(evt, mod);
+      showContextMenu(evt, mod); // ouvre le menu rename/delete pour ce module
     });
     menu.appendChild(item);
   });
 
-  // Positionner le menu
   menu.style.display = "block";
   menu.style.visibility = "hidden";
 
@@ -154,14 +203,15 @@ function showMultipleModuleContext(evt, modulesClicked) {
   menu.style.visibility = "visible";
 }
 
-/** Cache le menu contextuel clic droit */
+/** Cache le menu contextuel (clic droit) */
 function hideModuleContextMenu() {
   const menu = document.getElementById("moduleContextMenu");
   menu.style.display = "none";
   menu.style.visibility = "hidden";
+  menu.innerHTML = ""; // au cas où
 }
 
-/** Actualise le radar */
+/** rafraîchit le radar (clic gauche => détail) */
 async function refreshRadar() {
   try {
     const resp = await fetch("http://127.0.0.1:5000/api/modules");
@@ -174,7 +224,7 @@ async function refreshRadar() {
       return dailyPoints.reduce((acc, val) => acc + val, 0);
     });
 
-    // Au moins 6 axes
+    // Minimum 6 axes
     if (moduleNames.length < 6) {
       const needed = 6 - moduleNames.length;
       for (let i = 0; i < needed; i++) {
@@ -214,7 +264,7 @@ async function refreshRadar() {
             ticks: { stepSize: 2 }
           }
         },
-        // Clic gauche => aller en détail
+        // Clic gauche => direct detail
         onClick: (evt, elements) => {
           hideModuleChoiceMenu();
           if (elements.length === 0) return;
@@ -222,10 +272,8 @@ async function refreshRadar() {
             const index = elements[0].index;
             const moduleClicked = radarChart.data.labels[index];
             if (moduleClicked === "(empty)") return;
-            // Redirection direct
             window.location.href = `index.html?module=${encodeURIComponent(moduleClicked)}`;
           } else {
-            // Plusieurs points => choix du module => détail
             let modulesClicked = elements.map(el => radarChart.data.labels[el.index]);
             modulesClicked = Array.from(new Set(modulesClicked)).filter(m => m !== "(empty)");
             if (modulesClicked.length === 1) {
@@ -237,17 +285,17 @@ async function refreshRadar() {
         }
       }
     });
-
   } catch (err) {
     console.error("Error in refreshRadar:", err);
   }
 }
 
-/** Affiche un menu pour choisir un module si plusieurs points (clic gauche) => redirection détail */
+/** Menu si plusieurs points (clic gauche) => direct detail */
 function showModuleChoiceMenu(evt, elements, modulesClicked) {
   const menuDiv = document.getElementById("moduleChoiceMenu");
   menuDiv.innerHTML = "";
 
+  // Titre
   const title = document.createElement("div");
   title.textContent = "Multiple modules. Select one:";
   title.style.fontWeight = "bold";
@@ -266,7 +314,9 @@ function showModuleChoiceMenu(evt, elements, modulesClicked) {
     menuDiv.appendChild(item);
   });
 
-  // Calculer la position (moyenne x,y)
+  menuDiv.style.display = "block";
+  menuDiv.style.visibility = "hidden";
+
   const rect = radarChart.canvas.getBoundingClientRect();
   let sumX = 0, sumY = 0;
   for (const el of elements) {
@@ -278,14 +328,10 @@ function showModuleChoiceMenu(evt, elements, modulesClicked) {
   const avgX = sumX / elements.length;
   const avgY = sumY / elements.length;
 
-  menuDiv.style.display = "block";
-  menuDiv.style.visibility = "hidden";
-
   const w = menuDiv.offsetWidth;
   const h = menuDiv.offsetHeight;
-
-  const offsetX = - (w + 10);
-  const offsetY = - (h / 2) - 10;
+  const offsetX = -(w + 10);
+  const offsetY = -(h / 2) - 10;
   const xPos = rect.left + window.scrollX + avgX + offsetX;
   const yPos = rect.top + window.scrollY + avgY + offsetY;
 
@@ -294,11 +340,12 @@ function showModuleChoiceMenu(evt, elements, modulesClicked) {
   menuDiv.style.visibility = "visible";
 }
 
-/** Cache le menu "plusieurs modules" */
+/** Cache le menu multiple modules */
 function hideModuleChoiceMenu() {
   const menuDiv = document.getElementById("moduleChoiceMenu");
   menuDiv.style.display = "none";
   menuDiv.style.visibility = "hidden";
+  menuDiv.innerHTML = "";
 }
 
 /** rename module */
