@@ -9,20 +9,70 @@
       font-family: Arial, sans-serif;
       margin: 20px;
     }
-    canvas {
+
+    /* Container pour plusieurs radars */
+    #radarContainer {
+      display: flex;
+      flex-direction: column; /* on empile verticalement */
+      align-items: center;
+      gap: 20px;
+    }
+
+    .radarCanvas {
       max-width: 600px;
-      margin: 20px auto;
+      border: 2px solid transparent;
       display: block;
     }
-    /* Menu contextuel clic droit */
+    .selectedRadar {
+      border-color: red;
+    }
+
+    /* Boutons en haut à gauche */
+    #topLeftButtons {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    #addRadarBtn {
+      background-color: green;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #removeRadarBtn {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #addModuleBtn {
+      background-color: orange;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      font-size: 16px;
+      cursor: pointer;
+      display: none; /* visible seulement si un radar est sélectionné */
+    }
+
+    /* Menu contextuel clic droit (rename/delete module) */
     #moduleContextMenu {
       display: none;
       position: absolute;
       background-color: white;
       border: 1px solid #ccc;
       padding: 5px;
-      z-index: 999;
+      z-index: 9999;
     }
+
     /* Menu pour multiples modules (clic gauche) */
     #moduleChoiceMenu {
       display: none;
@@ -30,23 +80,24 @@
       background-color: white;
       border: 1px solid #ccc;
       padding: 5px;
-      z-index: 999;
+      z-index: 9999;
     }
   </style>
 </head>
 <body>
-  <h1>Radar Overview</h1>
-  <canvas id="radarChart" width="600" height="600"></canvas>
+  <h1>Radar Overview (Multi-Radars)</h1>
 
-  <div>
-    <input type="text" id="newModuleName" placeholder="New Module Name" />
-    <button id="createModuleBtn">Create Module</button>
+  <!-- Boutons en haut à gauche -->
+  <div id="topLeftButtons">
+    <button id="addRadarBtn">+ Radar</button>
+    <button id="removeRadarBtn" disabled>X Radar</button>
+    <button id="addModuleBtn">+ Module</button>
   </div>
 
-  <!-- Menu contextuel clic droit -->
-  <div id="moduleContextMenu"></div>
+  <div id="radarContainer"></div>
 
-  <!-- Menu de choix si plusieurs points en clic gauche -->
+  <!-- Menus contextuels cachés -->
+  <div id="moduleContextMenu"></div>
   <div id="moduleChoiceMenu"></div>
 
   <script src="script_radar.js"></script>

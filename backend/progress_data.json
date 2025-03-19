@@ -1,17 +1,5 @@
 {
   "modules": {
-    "Law": {
-      "subjects": [
-        {
-          "name": "Civil Law",
-          "status": "Pas fait"
-        },
-        {
-          "name": "Criminal Law",
-          "status": "Pas fait"
-        }
-      ]
-    },
     "ppb": {
       "subjects": [
         {
@@ -33,6 +21,22 @@
         {
           "name": "placeholder",
           "status": "En cours"
+        }
+      ]
+    },
+    "jhkl": {
+      "subjects": [
+        {
+          "name": "placeholder",
+          "status": "vide"
+        }
+      ]
+    },
+    ",k": {
+      "subjects": [
+        {
+          "name": "placeholder",
+          "status": "vide"
         }
       ]
     }

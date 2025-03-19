@@ -31,66 +31,144 @@ def serve_static_file(path):
     return send_from_directory(app.static_folder, path)
 
 # ----------------- API ROUTES ----------------- #
+
 @app.route("/api/modules", methods=["GET"])
-def get_modules():
+def get_all_data():
+    """
+    Comme dans l'ancienne version, on utilise /api/modules pour tout récupérer.
+    On y stocke l'ensemble des radars, modules, et historique.
+    """
     dm.daily_reset()
     return jsonify({
-        "current": dm.get_current_data(),
-        "historical": dm.get_historical_data()
+        "current": dm.get_current_data(),      # { "radars": {...}, "last_reset": ... }
+        "historical": dm.get_historical_data() # { RadarName: { ModuleName: { date: points } } }
     })
 
 @app.route("/api/progress", methods=["POST"])
 def update_progress():
+    """
+    Mise à jour d'un sujet dans un module pour un radar donné.
+    JSON attendu : { "radar":..., "module":..., "subject":..., "status":... }
+    """
     data = request.json
+    radar = data.get("radar")
     module = data.get("module")
     subject = data.get("subject")
     status = data.get("status")
-    if not module or not subject or status is None:
+    if not (radar and module and subject and status is not None):
         return jsonify({"error": "Missing fields"}), 400
 
-    dm.update_status(module, subject, status)
+    dm.update_status(radar, module, subject, status)
     return jsonify({"status": "success"})
 
 @app.route("/api/delete", methods=["POST"])
 def delete_subject():
+    """
+    Supprime un sujet d'un module dans un radar.
+    JSON attendu : { "radar":..., "module":..., "subject":... }
+    """
     data = request.json
+    radar = data.get("radar")
     module = data.get("module")
     subject = data.get("subject")
-    if not module or not subject:
+    if not (radar and module and subject):
         return jsonify({"error": "Missing fields"}), 400
 
-    success = dm.delete_subject(module, subject)
+    success = dm.delete_subject(radar, module, subject)
     if not success:
-        return jsonify({"error": f"Subject '{subject}' not found in module '{module}'"}), 404
+        return jsonify({"error": f"Subject '{subject}' not found in module '{module}' (radar '{radar}')"}), 404
 
     return jsonify({"status": "deleted"}), 200
 
 @app.route("/api/delete_module", methods=["POST"])
 def delete_module():
+    """
+    Supprime un module complet dans un radar.
+    JSON attendu : { "radar":..., "module":... }
+    """
     data = request.json
+    radar = data.get("radar")
     module = data.get("module")
-    if not module:
-        return jsonify({"error": "Missing module name"}), 400
+    if not (radar and module):
+        return jsonify({"error": "Missing fields"}), 400
 
-    success = dm.delete_module(module)
+    success = dm.delete_module(radar, module)
     if not success:
-        return jsonify({"error": f"Module '{module}' not found"}), 404
+        return jsonify({"error": f"Module '{module}' not found in radar '{radar}'"}), 404
 
     return jsonify({"status": "deleted"}), 200
 
 @app.route("/api/rename_module", methods=["POST"])
 def rename_module():
+    """
+    Renomme un module dans un radar.
+    JSON attendu : { "radar":..., "oldName":..., "newName":... }
+    """
     data = request.json
-    old_name = data.get("oldName")
-    new_name = data.get("newName")
-    if not old_name or not new_name:
+    radar = data.get("radar")
+    oldName = data.get("oldName")
+    newName = data.get("newName")
+    if not (radar and oldName and newName):
         return jsonify({"error": "Missing fields"}), 400
 
-    success = dm.rename_module(old_name, new_name)
+    success = dm.rename_module(radar, oldName, newName)
     if not success:
-        return jsonify({"error": f"Module '{old_name}' not found"}), 404
+        return jsonify({"error": f"Cannot rename '{oldName}' in radar '{radar}'"}), 400
 
     return jsonify({"status": "renamed"}), 200
+
+@app.route("/api/delete_radar", methods=["POST"])
+def delete_radar():
+    """
+    Supprime un radar complet.
+    JSON attendu : { "radar": ... }
+    """
+    data = request.json
+    radar = data.get("radar")
+    if not radar:
+        return jsonify({"error": "Missing radar name"}), 400
+
+    success = dm.delete_radar(radar)
+    if not success:
+        return jsonify({"error": f"Radar '{radar}' not found"}), 404
+
+    return jsonify({"status": "deleted"}), 200
+
+@app.route("/api/rename_radar", methods=["POST"])
+def rename_radar():
+    """
+    Renomme un radar.
+    JSON attendu : { "oldName":..., "newName":... }
+    """
+    data = request.json
+    oldName = data.get("oldName")
+    newName = data.get("newName")
+    if not (oldName and newName):
+        return jsonify({"error": "Missing fields"}), 400
+
+    success = dm.rename_radar(oldName, newName)
+    if not success:
+        return jsonify({"error": f"Cannot rename radar '{oldName}' to '{newName}'"}), 400
+
+    return jsonify({"status": "renamed"}), 200
+
+@app.route("/api/new_radar", methods=["POST"])
+def new_radar():
+    """
+    Crée un nouveau radar (vide).
+    JSON attendu : { "radar": ... }
+    """
+    data = request.json
+    radar = data.get("radar")
+    if not radar:
+        return jsonify({"error": "Missing radar name"}), 400
+
+    success = dm.create_radar(radar)
+    if not success:
+        return jsonify({"error": f"Radar '{radar}' already exists"}), 400
+
+    return jsonify({"status": "created"}), 200
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

@@ -1,0 +1,125 @@
+{
+  "radars": {
+    "Radar1": {
+      "modules": {
+        "Math": {
+          "subjects": [
+            {
+              "name": "Algebra",
+              "status": "Pas fait"
+            },
+            {
+              "name": "Analysis",
+              "status": "Pas fait"
+            }
+          ]
+        },
+        "English": {
+          "subjects": [
+            {
+              "name": "Grammar",
+              "status": "Pas fait"
+            }
+          ]
+        },
+        "ksldfm": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "vide"
+            }
+          ]
+        },
+        "kdjf": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "Pas fait"
+            }
+          ]
+        }
+      }
+    },
+    "Radar2": {
+      "modules": {
+        "df": {
+          "subjects": [
+            {
+              "name": "Mechanics",
+              "status": "Pas fait"
+            }
+          ]
+        },
+        "kjdls": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "vide"
+            }
+          ]
+        },
+        "lksjfsyr": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "vide"
+            }
+          ]
+        }
+      }
+    },
+    "kairm": {
+      "modules": {
+        "dfs": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "Done"
+            },
+            {
+              "name": "dfd",
+              "status": "Done"
+            }
+          ]
+        },
+        "fsazdf": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "Done"
+            }
+          ]
+        },
+        "dfd": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "vide"
+            }
+          ]
+        }
+      }
+    },
+    "hjhkj": {
+      "modules": {
+        "math": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "Done"
+            },
+            {
+              "name": "kjhkjhkj",
+              "status": "vide"
+            },
+            {
+              "name": "kkj",
+              "status": "vide"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "last_reset": "2025-03-10"
+}
