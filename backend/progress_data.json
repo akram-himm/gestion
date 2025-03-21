@@ -1,45 +1,92 @@
 {
-  "modules": {
-    "ppb": {
-      "subjects": [
-        {
-          "name": "placeholder",
-          "status": "Pas fait"
+  "radars": {
+    "DefaultRadar": {
+      "modules": {
+        "ppb": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "Pas fait"
+            }
+          ]
+        },
+        "skmq": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "Pas fait"
+            }
+          ]
+        },
+        "djsmjq": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "Done"
+            }
+          ]
+        },
+        "jhkl": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "Done"
+            }
+          ]
+        },
+        ",k": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "En cours"
+            }
+          ]
         }
-      ]
+      }
     },
-    "skmq": {
-      "subjects": [
-        {
-          "name": "placeholder",
-          "status": "Pas fait"
+    "123": {
+      "modules": {
+        "math": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "vide"
+            },
+            {
+              "name": "algebre",
+              "status": "En cours"
+            }
+          ]
+        },
+        "guyjkh": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "Done"
+            }
+          ]
+        },
+        "hjhkjh": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "Done"
+            }
+          ]
+        },
+        "klul": {
+          "subjects": [
+            {
+              "name": "placeholder",
+              "status": "En cours"
+            }
+          ]
         }
-      ]
+      }
     },
-    "djsmjq": {
-      "subjects": [
-        {
-          "name": "placeholder",
-          "status": "En cours"
-        }
-      ]
-    },
-    "jhkl": {
-      "subjects": [
-        {
-          "name": "placeholder",
-          "status": "vide"
-        }
-      ]
-    },
-    ",k": {
-      "subjects": [
-        {
-          "name": "placeholder",
-          "status": "vide"
-        }
-      ]
+    "akram": {
+      "modules": {}
     }
   },
-  "last_reset": "2025-03-07"
+  "last_reset": "2025-03-20"
 }
