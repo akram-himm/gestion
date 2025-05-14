@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Radar Overview</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Sidebar + toggle -->
+  <div id="sidebar">
+    <h2>Navigation</h2>
+    <nav>
+      <a href="acceuil.html">Accueil</a>
+      <a href="radar.html" class="active">Radar</a>
+      <a href="kanban.html">Kanban</a>
+    </nav>
+  </div>
+  <button id="toggle-sidebar">&lt;</button>
+
+  <div id="main">
+    <h1>Radar Overview</h1>
+    <div class="radar-grid" id="radarGrid">
+      <div class="radar-card add" id="addRadar">+</div>
+    </div>
+  </div>
+
+  <div id="radarContextMenu"></div>
+
+  <script src="script_radar.js"></script>
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('toggle-sidebar');
+    
+    function updateButtonText() {
+      toggle.textContent = sidebar.classList.contains('hidden') ? '>' : '<';
+    }
+    
+    updateButtonText();
+    
+    toggle.addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+      updateButtonText();
+    });
+  </script>
+</body>
+</html>

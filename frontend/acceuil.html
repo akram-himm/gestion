@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Accueil</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="sidebar">
+    <h2>Navigation</h2>
+    <nav>
+      <a href="acceuil.html" class="active">Accueil</a>
+      <a href="radar.html">Radar</a>
+      <a href="kanban.html">Kanban</a>
+    </nav>
+  </div>
+  <button id="toggle-sidebar">&lt;</button>
+  <div id="main">
+    <h1>Bienvenue !</h1>
+    <p>Choisissez une section dans la barre de gauche pour commencer.</p>
+  </div>
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const btn = document.getElementById('toggle-sidebar');
+    
+    // Fonction pour mettre à jour le texte du bouton en fonction de l'état de la barre
+    function updateButtonText() {
+      btn.textContent = sidebar.classList.contains('hidden') ? '>' : '<';
+    }
+    
+    // Définir l'état initial
+    updateButtonText();
+    
+    btn.addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+      updateButtonText();
+    });
+  </script>
+</body>
+</html>

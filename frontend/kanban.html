@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Kanban</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="sidebar">
+    <h2>Navigation</h2>
+    <nav>
+      <a href="acceuil.html">Accueil</a>
+      <a href="radar.html">Radar</a>
+      <a href="kanban.html" class="active">Kanban</a>
+    </nav>
+  </div>
+  <button id="toggle-sidebar">&lt;</button>
+
+  <div id="main">
+    <h1>Tableau Kanban</h1>
+    <div class="kanban-board">
+      <div class="kanban-column" data-status="À faire">
+        <h3>À faire</h3>
+        <div class="blank-line" contenteditable="true">+ Add new…</div>
+      </div>
+      <div class="kanban-column" data-status="En cours">
+        <h3>En cours</h3>
+        <div class="blank-line" contenteditable="true">+ Add new…</div>
+      </div>
+      <div class="kanban-column" data-status="Fait">
+        <h3>Fait</h3>
+        <div class="blank-line" contenteditable="true">+ Add new…</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script_kanban.js"></script>
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('toggle-sidebar');
+    
+    function updateButtonText() {
+      toggle.textContent = sidebar.classList.contains('hidden') ? '>' : '<';
+    }
+    
+    updateButtonText();
+    
+    toggle.addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+      updateButtonText();
+    });
+  </script>
+</body>
+</html>

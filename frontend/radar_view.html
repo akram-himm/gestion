@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Détail Radar</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .add-module-btn {
+      position: absolute; top: 20px; right: 20px;
+      background: green; color: white;
+      border: none; padding: 8px 12px; cursor: pointer;
+      border-radius: 4px;
+    }
+    #radarCanvas { display: block; margin: 80px auto 20px; max-width: 600px; }
+    #pointContextMenu {
+      position: absolute; background: #fff; border: 1px solid #ccc;
+      padding: 5px; display: none; z-index: 2000;
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <h2>Navigation</h2>
+    <nav>
+      <a href="acceuil.html">Accueil</a>
+      <a href="radar.html">Radar</a>
+      <a href="kanban.html">Kanban</a>
+    </nav>
+  </div>
+  <button id="toggle-sidebar">&lt;</button>
+
+  <h1 id="headerRadar" style="padding-left:220px; margin-top:40px;">Radar :</h1>
+  <button class="add-module-btn" id="addModuleBtn">+ Module</button>
+
+  <canvas id="radarCanvas" width="600" height="600"></canvas>
+  <div id="pointContextMenu"></div>
+
+  <script>
+    const API       = 'http://127.0.0.1:5000/api';
+    const params    = new URLSearchParams(window.location.search);
+    const radarName = params.get('radar');
+    document.getElementById('headerRadar').textContent = `Radar : ${radarName}`;
+    const ctx  = document.getElementById('radarCanvas').getContext('2d');
+    const menu = document.getElementById('pointContextMenu');
+
+    // Draw function
+    async function drawRadar() {
+      try {
+        const resp = await fetch(`${API}/modules`);
+        const { current, historical } = await resp.json();
+        const modulesObj = ((current.radars||{})[radarName]||{}).modules||{};
+        const labels = [], dataPts = [];
+        for (let m of Object.keys(modulesObj)) {
+          const hist = ((historical[radarName]||{})[m])||{};
+          const sum = Object.values(hist).reduce((a,b)=>a+b,0);
+          labels.push(m);
+          dataPts.push(sum);
+        }
+        while (labels.length < 6) {
+          labels.push('(empty)'); dataPts.push(null);
+        }
+
+        // Détruire l'ancien graphique s'il existe
+        const existingChart = Chart.getChart(ctx.canvas);
+        if (existingChart) {
+          existingChart.destroy();
+        }
+
+        new Chart(ctx, {
+          type: 'radar',
+          data: { labels, datasets:[{
+            label:'Points',
+            data:dataPts,
+            backgroundColor:'rgba(54,162,235,0.2)',
+            borderColor: 'rgba(54,162,235,1)',
+            pointBackgroundColor:'rgba(54,162,235,1)',
+            spanGaps:true
+          }]},
+          options: {
+            scales:{ r:{ beginAtZero:true, suggestedMax: labels.length*2 } },
+            onClick:(e, elems) => {
+              if (!elems.length) return;
+              const idx = elems[0].index,
+                    mod = labels[idx];
+              showPointMenu(e.pageX,e.pageY,mod);
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error drawing radar:', error);
+      }
+    }
+
+    // Context‐menu on a data point
+    function showPointMenu(x,y,moduleName) {
+      menu.innerHTML = `
+        <div id="rename">Renommer “${moduleName}”</div>
+        <div id="delete">Supprimer “${moduleName}”</div>`;
+      menu.style.left = x+'px'; menu.style.top = y+'px';
+      menu.style.display = 'block';
+      document.getElementById('rename').onclick = async () => {
+        const nm = prompt('Nouveau nom ?', moduleName);
+        if (!nm) return;
+        await fetch(`${API}/rename_module`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ radar: radarName, oldName: moduleName, newName: nm })
+        });
+        menu.style.display = 'none';
+        drawRadar();
+      };
+      document.getElementById('delete').onclick = async () => {
+        if (!confirm(`Supprimer "${moduleName}" ?`)) return;
+        await fetch(`${API}/delete_module`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ radar: radarName, module: moduleName })
+        });
+        menu.style.display = 'none';
+        drawRadar();
+      };
+    }
+
+    // Add new module
+    document.getElementById('addModuleBtn').onclick = async () => {
+      const m = prompt('Nom du nouveau module ?');
+      if (!m) return;
+      await fetch(`${API}/progress`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ radar: radarName, module: m, subject:'placeholder', status:'vide' })
+      });
+      await drawRadar(); // Mettre à jour le radar immédiatement après l'ajout
+    };
+
+    // Hide menus on click away
+    document.addEventListener('click', ()=> menu.style.display='none');
+
+    // Sidebar toggle
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('toggle-sidebar');
+    
+    function updateButtonText() {
+      toggle.textContent = sidebar.classList.contains('hidden') ? '>' : '<';
+    }
+    
+    updateButtonText();
+    
+    toggle.addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+      updateButtonText();
+    });
+
+    document.addEventListener('DOMContentLoaded', drawRadar);
+  </script>
+</body>
+</html>
